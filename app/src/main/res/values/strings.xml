@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">SearchableSpinnerDemo_MVP_Pattern</string>
+    <string name="searchable_spinner_search_hint">Enter a color</string>
+    <string-array name="colors">
+        <item>Amber</item>
+        <item>Aqua</item>
+        <item>Black</item>
+        <item>Blue</item>
+        <item>Bronze</item>
+        <item>Brown</item>
+        <item>Camel</item>
+        <item>Citron</item>
+        <item>Cyan</item>
+        <item>Emerald</item>
+        <item>Gold</item>
+        <item>Gray</item>
+        <item>Green</item>
+        <item>Iceberg</item>
+        <item>Imperial</item>
+        <item>Ivory</item>
+        <item>Jade</item>
+        <item>Jasmine</item>
+        <item>Lemon</item>
+        <item>Navy</item>
+        <item>Olive</item>
+        <item>Orange</item>
+        <item>Peach</item>
+        <item>Pearl</item>
+        <item>Pink</item>
+        <item>Platinum</item>
+        <item>Purple</item>
+        <item>Red</item>
+        <item>Scarlet</item>
+        <item>Silver</item>
+        <item>Vanilla</item>
+        <item>White</item>
+        <item>Yellow</item>
+    </string-array>
+</resources>
