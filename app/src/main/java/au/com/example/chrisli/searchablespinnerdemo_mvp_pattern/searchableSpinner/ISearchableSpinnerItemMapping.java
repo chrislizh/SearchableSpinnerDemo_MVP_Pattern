@@ -5,6 +5,6 @@ import java.util.List;
 /**
  * Created by cli on 12/07/2016.
  */
-public interface ISearchableSpinnerItemMapping {
+interface ISearchableSpinnerItemMapping {
     int getSpinnerPositionFromListPosition(List itemList, Object item);
 }

@@ -7,8 +7,8 @@ import java.util.List;
  */
 public class SearchableSpinnerPresenter implements ISearchableSpinnerPresenter {
 
-    private ISearchableSpinnerView iSearchableSpinnerView_;
-    private ISearchableListDialogView iSearchableListDialogView_;
+    final private ISearchableSpinnerView iSearchableSpinnerView_;
+    final private ISearchableListDialogView iSearchableListDialogView_;
 
     public SearchableSpinnerPresenter(ISearchableSpinnerView iSearchableSpinnerView, ISearchableListDialogView iSearchableListDialogView) {
         iSearchableSpinnerView_ = iSearchableSpinnerView;

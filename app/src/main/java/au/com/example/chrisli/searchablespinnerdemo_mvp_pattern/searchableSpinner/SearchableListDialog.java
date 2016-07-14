@@ -101,7 +101,9 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    ((ArrayAdapter) listView_.getAdapter()).getFilter().filter(newText);
+                    if (listView_ != null) {
+                        ((ArrayAdapter) listView_.getAdapter()).getFilter().filter(newText);
+                    }
                     return true;
                 }
             });
@@ -112,7 +114,7 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
             listView_ = listView;
             listView.setTextFilterEnabled(true);
             listView.setDivider(null);
-            final ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), R.layout.searchable_spinner_list_item, originalItemList_);
+            ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), R.layout.searchable_spinner_list_item, originalItemList_);
             listView.setAdapter(arrayAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override

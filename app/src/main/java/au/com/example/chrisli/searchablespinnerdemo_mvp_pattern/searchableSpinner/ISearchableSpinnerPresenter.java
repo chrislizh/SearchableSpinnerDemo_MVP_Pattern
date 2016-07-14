@@ -3,6 +3,6 @@ package au.com.example.chrisli.searchablespinnerdemo_mvp_pattern.searchableSpinn
 /**
  * Created by cli on 12/07/2016.
  */
-public interface ISearchableSpinnerPresenter {
+interface ISearchableSpinnerPresenter {
     void listItemSelected(int position);
 }

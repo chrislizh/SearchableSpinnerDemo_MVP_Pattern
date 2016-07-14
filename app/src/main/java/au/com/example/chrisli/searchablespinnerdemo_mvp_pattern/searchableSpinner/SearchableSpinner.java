@@ -20,7 +20,6 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
 
     private Context context_;
     private ISearchableListDialogView iSearchableListDialog_;
-    private ISearchableSpinnerPresenter iSearchableSpinnerPresenter_;
     private List itemList_;
 
     public SearchableSpinner(Context context) {
@@ -43,8 +42,8 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     private void init(Context context, AttributeSet attrs) {
         context_ = context;
         iSearchableListDialog_ = new SearchableListDialog();
-        iSearchableSpinnerPresenter_ = new SearchableSpinnerPresenter(this, iSearchableListDialog_);
-        iSearchableListDialog_.setPresenter(iSearchableSpinnerPresenter_);
+        ISearchableSpinnerPresenter iSearchableSpinnerPresenter = new SearchableSpinnerPresenter(this, iSearchableListDialog_);
+        iSearchableListDialog_.setPresenter(iSearchableSpinnerPresenter);
         if (attrs != null) {
             TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SearchableSpinner);
             if (typedArray != null) {
@@ -55,6 +54,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
                         break;
                     }
                 }
+                typedArray.recycle();
             }
         }
         if (itemList_ != null) {
@@ -69,7 +69,9 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     public boolean onTouchEvent(MotionEvent event) {
         if (this.isEnabled() && this.getVisibility() == VISIBLE) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                iSearchableListDialog_.showDialog(context_);
+                if (iSearchableListDialog_ != null) {
+                    iSearchableListDialog_.showDialog(context_);
+                }
             }
         }
         return true;

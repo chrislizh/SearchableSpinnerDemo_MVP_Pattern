@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by cli on 13/07/2016.
  */
-public interface ISearchableListDialogView {
+interface ISearchableListDialogView {
     void showDialog(Context context);
     void setOriginalItemList(List originalItemList);
     void setSearchHint(String searchHint);
