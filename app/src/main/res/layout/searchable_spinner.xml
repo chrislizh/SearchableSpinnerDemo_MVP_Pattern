@@ -15,7 +15,8 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/lvSearchableSpinnerListView">
+        android:id="@+id/lvSearchableSpinnerListView"
+        android:fadeScrollbars="false">
     </ListView>
 
 </LinearLayout>

@@ -11,6 +11,7 @@ interface ISearchableListDialogView {
     void showDialog(Context context);
     void setOriginalItemList(List originalItemList);
     void setSearchHint(String searchHint);
+    void setSearchText(String searchText);
     void setPresenter(ISearchableSpinnerPresenter iSearchableSpinnerPresenter);
 
     List getInstantItemList();

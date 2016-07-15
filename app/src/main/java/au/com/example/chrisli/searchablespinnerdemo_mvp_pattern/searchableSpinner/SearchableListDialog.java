@@ -6,8 +6,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -31,8 +31,9 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
     private static final String SEARCHABLE_LIST_DIALOG_TAG = "searchable_list_dialog_tag";
 
     private ISearchableSpinnerPresenter iSearchableSpinnerPresenter_;
-    private List originalItemList_ = new ArrayList();
-    private String searchHint_ = "";
+    private List originalItemList_;
+    private String searchHint_;
+    private String searchText_;
     private ListView listView_;
 
     //Description: a function to instruct it's time to show the SearchableListDialog (called by SearchableSpinner)
@@ -41,7 +42,9 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
     public void showDialog(Context context) {
         if (context != null) {
             FragmentManager fragmentManager = ((Activity) context).getFragmentManager();
-            this.show(fragmentManager, SEARCHABLE_LIST_DIALOG_TAG);
+            if (fragmentManager != null) {
+                this.show(fragmentManager, SEARCHABLE_LIST_DIALOG_TAG);
+            }
         }
     }
 
@@ -65,6 +68,13 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
         this.searchHint_ = searchHint;
     }
 
+    //Description: a function to set the search text on the SearchView (called by SearchableSpinner)
+    //Author: Chris Li
+    @Override
+    public void setSearchText(String searchText) {
+        this.searchText_ = searchText;
+    }
+
     //Description: a function to get the item list (called by presenter)
     //Author: Chris Li
     @Override
@@ -85,54 +95,99 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
 
     //Description: DialogFragment callback function
     //Author: Chris Li
-    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        View searchableListView = View.inflate(getActivity(), R.layout.searchable_spinner, null);
-        final SearchView searchView = (SearchView) searchableListView.findViewById(R.id.svSearchableSpinnerSearchView);
-        if (searchView != null) {
-            searchView.setQueryHint(searchHint_);
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return true;
-                }
+        if (iSearchableSpinnerPresenter_ != null) {
+            final View searchableListDialogView = View.inflate(getActivity(), R.layout.searchable_spinner, null);
 
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    if (listView_ != null) {
-                        ((ArrayAdapter) listView_.getAdapter()).getFilter().filter(newText);
+            final ListView listView = (ListView) searchableListDialogView.findViewById(R.id.lvSearchableSpinnerListView);
+            if (listView != null) {
+                listView_ = listView;
+                listView.setTextFilterEnabled(true);
+                listView.setDivider(null);
+                final ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), R.layout.searchable_spinner_list_item, originalItemList_);
+                listView.setAdapter(arrayAdapter);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        if (iSearchableSpinnerPresenter_ != null) {
+                            iSearchableSpinnerPresenter_.listItemSelected(position);
+                            //tell the presenter to delegate the showing state of the dialog (isShowing = false)
+                            iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(false);
+                        }
+                        hideSoftKeyboard(listView);
+                        SearchableListDialog.this.dismiss(); //dismiss the dialog
                     }
-                    return true;
+                });
+            }
+
+            final SearchView searchView = (SearchView) searchableListDialogView.findViewById(R.id.svSearchableSpinnerSearchView);
+            if (searchView != null) {
+                searchView.setQueryHint(searchHint_);
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        handleSearchTextChange(newText);
+                        return true;
+                    }
+                });
+                searchView.setQuery(searchText_, true);//Submit the change right now, make sure the list has been set up before calling this function.
+            }
+
+            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setPositiveButton("CLOSE", new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    hideSoftKeyboard(searchableListDialogView);
+                    SearchableListDialog.this.dismiss();
                 }
-            });
+            }).create();
+            alertDialog.setView(searchableListDialogView);
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams
+                    .SOFT_INPUT_STATE_HIDDEN);
+
+            //tell the presenter to delegate the showing state of the dialog (isShowing = true)
+            if (iSearchableSpinnerPresenter_ != null) {
+                iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(true);
+            }
+
+            return alertDialog;
         }
 
-        final ListView listView = (ListView) searchableListView.findViewById(R.id.lvSearchableSpinnerListView);
-        if (listView != null) {
-            listView_ = listView;
-            listView.setTextFilterEnabled(true);
-            listView.setDivider(null);
-            ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), R.layout.searchable_spinner_list_item, originalItemList_);
-            listView.setAdapter(arrayAdapter);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if (iSearchableSpinnerPresenter_ != null) {
-                        iSearchableSpinnerPresenter_.listItemSelected(position);
-                    }
-                    ((InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(listView.getWindowToken(), 0); //hide the soft keyboard
-                    SearchableListDialog.this.dismiss(); //dismiss the dialog
-                }
-            });
-        }
+        return null;
+    }
 
-        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-        alertDialog.setView(searchableListView);
-        alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams
-                .SOFT_INPUT_STATE_HIDDEN);
-        return alertDialog;
+    //Description: DialogFragment callback function
+    //Author: Chris Li
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        //tell the presenter to delegate the showing state of the dialog (isShowing = false)
+        if (iSearchableSpinnerPresenter_ != null) {
+            iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(false);
+        }
+        super.onCancel(dialog);
+    }
+
+    //Description: a function to handle what to do when the search text changes
+    //Author: Chris Li
+    private void handleSearchTextChange(String searchText) {
+        if (listView_ != null) {
+            ((ArrayAdapter) listView_.getAdapter()).getFilter().filter(searchText);
+            if (iSearchableSpinnerPresenter_ != null) {
+                iSearchableSpinnerPresenter_.delegateSearchableListDialogSearchText(searchText);
+            }
+        }
+    }
+
+    //Description: a function to hide the soft keyboard
+    //Author: Chris Li
+    private void hideSoftKeyboard(View view) {
+        ((InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0); //hide the soft keyboard
     }
 
 }

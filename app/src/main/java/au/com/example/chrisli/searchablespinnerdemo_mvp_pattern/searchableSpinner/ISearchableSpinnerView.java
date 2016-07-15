@@ -8,4 +8,6 @@ import java.util.List;
 interface ISearchableSpinnerView {
     void setSpinnerSelection(int position);
     List getSpinnerItemList();
+    void setSearchableListDialogShowingState(boolean isShowing);
+    void setSearchableListDialogSearchText(String searchText);
 }

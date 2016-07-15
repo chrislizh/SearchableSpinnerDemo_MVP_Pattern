@@ -5,4 +5,6 @@ package au.com.example.chrisli.searchablespinnerdemo_mvp_pattern.searchableSpinn
  */
 interface ISearchableSpinnerPresenter {
     void listItemSelected(int position);
+    void delegateSearchableListDialogShowingState(boolean isShowing);
+    void delegateSearchableListDialogSearchText(String searchText);
 }

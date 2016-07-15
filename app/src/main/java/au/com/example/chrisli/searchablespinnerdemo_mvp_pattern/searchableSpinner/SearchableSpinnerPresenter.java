@@ -33,4 +33,22 @@ public class SearchableSpinnerPresenter implements ISearchableSpinnerPresenter {
             }
         }
     }
+
+    //Description: a function to delegate the showing state of SearchableListDialog to SearchableSpinner (called by SearchableListDialog)
+    //Author: Chris Li
+    @Override
+    public void delegateSearchableListDialogShowingState(boolean isShowing) {
+        if (iSearchableSpinnerView_ != null) {
+            iSearchableSpinnerView_.setSearchableListDialogShowingState(isShowing);
+        }
+    }
+
+    //Description: a function to delegate the search text of SearchableListDialog to SearchableSpinner (called by SearchableListDialog)
+    //Author: Chris Li
+    @Override
+    public void delegateSearchableListDialogSearchText(String searchText) {
+        if (iSearchableSpinnerView_ != null) {
+            iSearchableSpinnerView_.setSearchableListDialogSearchText(searchText);
+        }
+    }
 }
