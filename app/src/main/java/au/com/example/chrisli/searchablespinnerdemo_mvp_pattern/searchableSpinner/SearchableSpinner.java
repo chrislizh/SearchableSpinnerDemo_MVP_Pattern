@@ -23,7 +23,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     private Context context_;
     private ISearchableListDialogView iSearchableListDialog_;
     private ISearchableSpinnerPresenter iSearchableSpinnerPresenter_;
-    private String SearchText_;
+    private String searchText_;
     private String searchHint_;
     private boolean showingSearchableListDialog_;
 
@@ -165,13 +165,13 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     //Author: Chris Li
     @Override
     public void setSearchableListDialogSearchText(String searchText) {
-        SearchText_ = searchText;
+        searchText_ = searchText;
     }
 
     @Override
     public Parcelable onSaveInstanceState() {
         if (showingSearchableListDialog_) {
-            return new SearchableSpinnerState(true, SearchText_, super.onSaveInstanceState());
+            return new SearchableSpinnerState(true, searchText_, super.onSaveInstanceState());
         }
         return super.onSaveInstanceState();
     }
@@ -181,7 +181,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         if (state instanceof SearchableSpinnerState) {
             SearchableSpinnerState searchableSpinnerState = (SearchableSpinnerState) state;
             super.onRestoreInstanceState(searchableSpinnerState.getSuperClassState());
-            SearchText_ = searchableSpinnerState.getSearchableListDialogSearchText();
+            searchText_ = searchableSpinnerState.getSearchableListDialogSearchText();
             showingSearchableListDialog_ = searchableSpinnerState.isShowingSearchableListDialog();
             if (showingSearchableListDialog_) {
                 showSearchableListDialog();
@@ -197,7 +197,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         if (iSearchableListDialog_ != null) {
             iSearchableListDialog_.setPresenter(iSearchableSpinnerPresenter_);
             iSearchableListDialog_.setSearchHint(searchHint_);
-            iSearchableListDialog_.setSearchText(SearchText_);
+            iSearchableListDialog_.setSearchText(searchText_);
             iSearchableListDialog_.setOriginalItemList(getSpinnerItemList());
             iSearchableListDialog_.showDialog(context_);
         }
