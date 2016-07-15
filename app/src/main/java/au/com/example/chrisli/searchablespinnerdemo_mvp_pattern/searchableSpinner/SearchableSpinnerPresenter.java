@@ -29,6 +29,7 @@ public class SearchableSpinnerPresenter implements ISearchableSpinnerPresenter {
                     if (itemPositionInSpinner >= 0) {
                         iSearchableSpinnerView_.setSpinnerSelection(itemPositionInSpinner);
                     }
+                    iSearchableSpinnerView_.setSearchableListDialogSearchText(null); //clear the search text as the user has made a selection
                 }
             }
         }

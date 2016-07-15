@@ -143,6 +143,7 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
             AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setPositiveButton("CLOSE", new DialogInterface.OnClickListener(){
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(false);
                     hideSoftKeyboard(searchableListDialogView);
                     SearchableListDialog.this.dismiss();
                 }
