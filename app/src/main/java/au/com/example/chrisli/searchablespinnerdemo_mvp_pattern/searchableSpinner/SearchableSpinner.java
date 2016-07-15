@@ -22,15 +22,16 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
 
     private Context context_;
     private ISearchableListDialogView iSearchableListDialog_;
-    private List itemList_;
+    private ISearchableSpinnerPresenter iSearchableSpinnerPresenter_;
+    private String SearchText_;
+    private String searchHint_;
     private boolean showingSearchableListDialog_;
-    private String searchableListDialogSearchText_;
 
     private static class SearchableSpinnerState implements Parcelable {
 
         boolean showingSearchableListDialog_;
 
-        String searchableListDialogSearchText_;
+        String searchText_;
         Parcelable superClassState_;
 
         public boolean isShowingSearchableListDialog() {
@@ -38,7 +39,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         }
 
         public String getSearchableListDialogSearchText() {
-            return searchableListDialogSearchText_;
+            return searchText_;
         }
 
         public Parcelable getSuperClassState() {
@@ -47,13 +48,13 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
 
         public SearchableSpinnerState(boolean showingSearchableListDialog, String searchableListDialogSearchText, Parcelable superClassState) {
             showingSearchableListDialog_ = showingSearchableListDialog;
-            searchableListDialogSearchText_ = searchableListDialogSearchText;
+            searchText_ = searchableListDialogSearchText;
             superClassState_ = superClassState;
         }
 
         protected SearchableSpinnerState(Parcel in) {
             showingSearchableListDialog_ = (Boolean) in.readValue(Boolean.class.getClassLoader());
-            searchableListDialogSearchText_ = in.readString();
+            searchText_ = in.readString();
             superClassState_ = in.readParcelable(Parcelable.class.getClassLoader());
         }
 
@@ -77,7 +78,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeValue(showingSearchableListDialog_);
-            dest.writeString(searchableListDialogSearchText_);
+            dest.writeString(searchText_);
             dest.writeParcelable(superClassState_, PARCELABLE_WRITE_RETURN_VALUE); //superClassState_ is a return value of super.onSaveInstanceState()
         }
     }
@@ -103,24 +104,19 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         context_ = context;
         showingSearchableListDialog_ = false;
         iSearchableListDialog_ = new SearchableListDialog();
-        ISearchableSpinnerPresenter iSearchableSpinnerPresenter = new SearchableSpinnerPresenter(this, iSearchableListDialog_);
-        iSearchableListDialog_.setPresenter(iSearchableSpinnerPresenter);
+        iSearchableSpinnerPresenter_ = new SearchableSpinnerPresenter(this, iSearchableListDialog_);
         if (attrs != null) {
             TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.SearchableSpinner);
             if (typedArray != null) {
                 for (int i = 0; i < typedArray.getIndexCount(); i++) {
                     int attribute = typedArray.getIndex(i);
                     if (attribute == R.styleable.SearchableSpinner_searchHint) {
-                        iSearchableListDialog_.setSearchHint(typedArray.getString(i));
+                        searchHint_ = typedArray.getString(i);
                         break;
                     }
                 }
                 typedArray.recycle();
             }
-        }
-        if (itemList_ != null) {
-            //item list is already ready as SetAdapter() can be called before this function is called
-            iSearchableListDialog_.setOriginalItemList(itemList_);
         }
     }
 
@@ -130,28 +126,10 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     public boolean onTouchEvent(MotionEvent event) {
         if (this.isEnabled() && this.getVisibility() == VISIBLE) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (iSearchableListDialog_ != null) {
-                    iSearchableListDialog_.showDialog(context_);
-                }
+                showSearchableListDialog();
             }
         }
         return true;
-    }
-
-    //Description: AdapterView callback function
-    //Author: Chris Li
-    @Override
-    public void setAdapter(SpinnerAdapter adapter) {
-        if (adapter != null) {
-            itemList_ = new ArrayList();
-            for (int i = 0; i < adapter.getCount(); i++) {
-                itemList_.add(adapter.getItem(i));
-            }
-            if (iSearchableListDialog_ != null) { //it could be null as this function can be called before init() is called
-                iSearchableListDialog_.setOriginalItemList(itemList_);
-            }
-        }
-        super.setAdapter(adapter);
     }
 
     //Description: a function to set the user selection(with a remapped position) of the spinner(called by the presenter)
@@ -161,7 +139,7 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         this.setSelection(position);
     }
 
-    //Description: a function to get the item list of the spinner(called by presenter)
+    //Description: a function to get the item list of the spinner(called by presenter and this object)
     //Author: Chris Li
     @Override
     public List getSpinnerItemList() {
@@ -187,13 +165,13 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
     //Author: Chris Li
     @Override
     public void setSearchableListDialogSearchText(String searchText) {
-        searchableListDialogSearchText_ = searchText;
+        SearchText_ = searchText;
     }
 
     @Override
     public Parcelable onSaveInstanceState() {
         if (showingSearchableListDialog_) {
-            return new SearchableSpinnerState(true, searchableListDialogSearchText_, super.onSaveInstanceState());
+            return new SearchableSpinnerState(true, SearchText_, super.onSaveInstanceState());
         }
         return super.onSaveInstanceState();
     }
@@ -203,16 +181,25 @@ public class SearchableSpinner extends Spinner implements ISearchableSpinnerView
         if (state instanceof SearchableSpinnerState) {
             SearchableSpinnerState searchableSpinnerState = (SearchableSpinnerState) state;
             super.onRestoreInstanceState(searchableSpinnerState.getSuperClassState());
-            searchableListDialogSearchText_ = searchableSpinnerState.getSearchableListDialogSearchText();
+            SearchText_ = searchableSpinnerState.getSearchableListDialogSearchText();
             showingSearchableListDialog_ = searchableSpinnerState.isShowingSearchableListDialog();
             if (showingSearchableListDialog_) {
-                if (iSearchableListDialog_ != null) {
-                    iSearchableListDialog_.setSearchText(searchableListDialogSearchText_);
-                    iSearchableListDialog_.showDialog(context_);
-                }
+                showSearchableListDialog();
             }
         } else {
             super.onRestoreInstanceState(state);
+        }
+    }
+
+    //Description: a function to set up and show the searchable list dialog view
+    //Author: Chris Li
+    private void showSearchableListDialog() {
+        if (iSearchableListDialog_ != null) {
+            iSearchableListDialog_.setPresenter(iSearchableSpinnerPresenter_);
+            iSearchableListDialog_.setSearchHint(searchHint_);
+            iSearchableListDialog_.setSearchText(SearchText_);
+            iSearchableListDialog_.setOriginalItemList(getSpinnerItemList());
+            iSearchableListDialog_.showDialog(context_);
         }
     }
 }
