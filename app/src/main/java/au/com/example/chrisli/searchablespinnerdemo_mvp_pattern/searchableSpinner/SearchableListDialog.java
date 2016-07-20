@@ -140,10 +140,12 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
                 searchView.setQuery(searchText_, true);//Submit the change right now, make sure the list has been set up before calling this function.
             }
 
-            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setPositiveButton("CLOSE", new DialogInterface.OnClickListener(){
+            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).setNeutralButton("CLOSE", new DialogInterface.OnClickListener(){
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(false);
+                    if (iSearchableSpinnerPresenter_ != null) {
+                        iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(false);
+                    }
                     hideSoftKeyboard(searchableListDialogView);
                     SearchableListDialog.this.dismiss();
                 }
@@ -153,10 +155,9 @@ public class SearchableListDialog extends DialogFragment implements ISearchableL
                     .SOFT_INPUT_STATE_HIDDEN);
 
             //tell the presenter to delegate the showing state of the dialog (isShowing = true)
-            if (iSearchableSpinnerPresenter_ != null) {
-                iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(true);
-            }
+            iSearchableSpinnerPresenter_.delegateSearchableListDialogShowingState(true);
 
+            alertDialog.setCanceledOnTouchOutside(true);
             return alertDialog;
         }
 
